@@ -9,7 +9,7 @@
 addPortfInstr <- function(Portfolio,symbols,...) 
 {
   pname<-Portfolio
-  portfolio<-getPortfolio(pname)
+  portfolio<-.getPortfolio(pname)
   initDate <- attr(portfolio, "initDate")    
   currency <- attr(portfolio, "currency")
   for(instrument in symbols){
@@ -29,7 +29,7 @@ addPortfInstr <- function(Portfolio,symbols,...)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: addPortfInstr.R 1617 2014-06-28 15:00:02Z bodanker $
 #
 ###############################################################################
 

@@ -29,8 +29,9 @@ PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portf
 	else Account<-try(get(aname,envir=.blotter), silent=TRUE)
 	
 	if(inherits(Account,"try-error"))
-		stop(paste("Account ",aname," not found, use initAcct() to create a new account"))
-	if(!inherits(Account,"account")) stop("Account ",aname," passed is not the name of an account object.")
+		stop("Account ", aname, " not found, use initAcct() to create a new account")
+	if(!inherits(Account,"account"))
+		stop("Account ", aname, " passed is not the name of an account object.")
 	
 	if(is.null(Portfolios)) Portfolios = names(Account$portfolios)
 	
@@ -76,6 +77,6 @@ PortfReturns <- function (Account, method=c('contribution'),...,Dates=NULL,Portf
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: PortfReturns.R 1641 2014-10-21 02:57:11Z bodanker $
 #
 ###############################################################################

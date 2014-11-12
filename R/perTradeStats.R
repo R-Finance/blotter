@@ -123,7 +123,7 @@ perTradeStats <- function(Portfolio, Symbol, includeOpenTrade=TRUE, tradeDef="fl
         Pos.PL <- trade[,"Pos.Value"]-Pos.Cost.Basis
         Pct.PL <- Pos.PL/abs(Pos.Cost.Basis)           # broken for last timestamp (fixed below)
         Tick.PL <- Pos.PL/abs(Pos.Qty)/tick_value      # broken for last timestamp (fixed below)
-        Max.Pos.Qty.loc <- which.max(Pos.Qty)          # find max position quantity location
+        Max.Pos.Qty.loc <- which.max(abs(Pos.Qty))     # find max position quantity location
 
         # position sizes
         trades$Init.Pos[i] <- Pos.Qty[1]
@@ -305,6 +305,6 @@ tradeQuantiles <- function(Portfolio, Symbol, ..., scale=c('cash','percent','tic
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: perTradeStats.R 1626 2014-07-27 08:31:43Z bodanker $
 #
 ###############################################################################

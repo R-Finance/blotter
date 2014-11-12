@@ -105,6 +105,9 @@
 		#first price is NA, it would be nice to fill it in with a previous last valid price
 		fprice <- last(prices[paste('::',startDate,sep='')])
 		if (length(fprice)==1) tmpPL[1,'Prices'] <- fprice 
+                # if there's no previous valid price, calculate it from the prior position value
+                # (can occur if .updatePosPL is called repeatedly with only one date/price)
+                if (length(fprice)==0) tmpPL[1,'Prices'] <- priorPL[,'Pos.Value'] / priorPL[,'Pos.Qty']
 	}
 	# na.locf any missing prices with last observation (this assumption seems the only rational one for vectorization)
 	# and na.locf Pos.Qty,Con.Mult,Pos.Avg.Cost to instantiate $posPL new rows
@@ -256,6 +259,6 @@
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: updatePosPL.R 1646 2014-11-07 20:50:11Z bodanker $
 #
 ###############################################################################

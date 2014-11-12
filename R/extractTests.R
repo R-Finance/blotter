@@ -23,7 +23,7 @@ extractTxns <- function(Portfolio)
 	pname <- Portfolio	
 	Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
 	if(inherits(Portfolio,"try-error"))
-		stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio first"))
+		stop("Portfolio ", pname, " not found, use initPortf() to create a new portfolio first")
 	out<-NULL
 	symbolnames<-ls(Portfolio[['symbols']])
 	for (Symbol in symbolnames) {
@@ -61,6 +61,6 @@ extractTxns <- function(Portfolio)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: extractTests.R 1641 2014-10-21 02:57:11Z bodanker $
 #
 ###############################################################################

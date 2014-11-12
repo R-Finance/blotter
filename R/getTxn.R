@@ -16,7 +16,7 @@ getTxns <- function(Portfolio, Symbol, Dates)
     pname<-Portfolio
     Portfolio<-get(paste("portfolio",pname,sep='.'), envir=.blotter)
     if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio first"))
+        stop("Portfolio ", pname, " not found, use initPortf() to create a new portfolio first")
     
     TxnData = Portfolio$symbols[[Symbol]]$txn
     Txns = TxnData[Dates,c('Txn.Qty', 'Txn.Price', 'Txn.Fees', 'Txn.Value', 'Txn.Avg.Cost', 'Net.Txn.Realized.PL')]
@@ -31,6 +31,6 @@ getTxns <- function(Portfolio, Symbol, Dates)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: getTxn.R 1641 2014-10-21 02:57:11Z bodanker $
 #
 ###############################################################################

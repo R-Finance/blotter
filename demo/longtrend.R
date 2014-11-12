@@ -133,6 +133,6 @@ ltaccount = getAccount("longtrend")
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: longtrend.R 1483 2013-07-22 01:27:14Z bodanker $
 #
 ###############################################################################

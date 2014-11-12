@@ -19,6 +19,6 @@ put.account <- function(account.st, account, envir=.blotter)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: put.account.R 1596 2014-03-30 17:21:55Z braverock $
 #
 ###############################################################################

@@ -15,7 +15,7 @@ updateEndEq <- function(Account, Dates=NULL)
 	aname<-Account
     Account<-try(get(paste("account",aname,sep='.'), envir=.blotter), silent=TRUE)
     if(inherits(Account,"try-error"))
-        stop(paste("Account",aname," not found, use initAcct() to create a new account"))
+        stop("Account ", aname, " not found, use initAcct() to create a new account")
     
     if(is.null(Dates)) # if no date is specified, get all available dates
         Dates = index(Account$summary)[-1]
@@ -50,6 +50,6 @@ updateEndEq <- function(Account, Dates=NULL)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: updateEndEq.R 1641 2014-10-21 02:57:11Z bodanker $
 #
 ###############################################################################

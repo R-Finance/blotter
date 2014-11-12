@@ -48,8 +48,9 @@ getPortfolio <- function(Portfolio, Dates=NULL, envir=.blotter)
     if(!grepl("portfolio\\.",pname)) Portfolio<-suppressWarnings(try(get(paste("portfolio",pname,sep='.'),envir=envir),silent=TRUE))
     else Portfolio<-suppressWarnings(try(get(pname,envir=envir),silent=TRUE))
     if(inherits(Portfolio,"try-error"))
-        stop(paste("Portfolio",pname," not found, use initPortf() to create a new portfolio"))
-    if(!inherits(Portfolio,"portfolio")) stop("Portfolio",pname,"passed is not the name of a portfolio object.")  
+        stop("Portfolio ", pname, " not found, use initPortf() to create a new portfolio")
+    if(!inherits(Portfolio,"portfolio"))
+        stop("Portfolio ", pname, " passed is not the name of a portfolio object.")  
     return(Portfolio)
 }
 
@@ -87,6 +88,6 @@ is.portfolio <- function(x,...)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: getPortfolio.R 1641 2014-10-21 02:57:11Z bodanker $
 #
 ###############################################################################

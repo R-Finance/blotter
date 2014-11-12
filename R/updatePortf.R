@@ -129,6 +129,6 @@ updatePortf <- function(Portfolio, Symbols=NULL, Dates=NULL, Prices=NULL, Interv
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: updatePortf.R 1596 2014-03-30 17:21:55Z braverock $
 #
 ###############################################################################

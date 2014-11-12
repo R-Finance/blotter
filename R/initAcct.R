@@ -10,7 +10,7 @@
 #' portfolios: a list of portfolio object names to attach to the account
 #' initDate: date prior to the first close price given, used to contain
 #'           initial account equity and initial position 
-#' initEq: initial equity or starting capitaal, default is 100,000
+#' initEq: initial equity or starting capital, default is 100,000
 #' 
 #' Outputs
 #' Constructs multi-column xts object used to store aggregated portfolio 
@@ -52,7 +52,7 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0
 { # @author Peter Carl
 
     if(exists(paste("account",name,sep='.'), envir=.blotter,inherits=TRUE)) 
-        stop(paste("Account",name,"already exists, use updateAcct() or create a new account."))
+        stop("Account ", name, " already exists, use updateAcct() or create a new account.")
     
     # FUNCTION
     account=list()
@@ -88,6 +88,6 @@ initAcct <- function(name='default', portfolios, initDate="1950-01-01", initEq=0
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: initAcct.R 1641 2014-10-21 02:57:11Z bodanker $
 #
 ###############################################################################

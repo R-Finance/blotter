@@ -33,6 +33,7 @@ test.addTxn <- function() {
   transactions <- portfolio[["IBM"]][["txn"]]
   checkEquals(13, sum(transactions$Txn.Fees))
   checkEquals(0, sum(transactions$Txn.Qty))
+  checkEquals(23, sum(transactions$Txn.Qty))
 
   # TODO: fix bug in calcPortfSummary
   # summary <- calcPortfSummary(portfolio)

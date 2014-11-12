@@ -8,7 +8,7 @@ getEndEq <- function(Account, Date)
     aname<-Account
     Account<-try(get(paste("account",aname,sep='.'), envir=.blotter), silent=TRUE)
     if(inherits(Account,"try-error"))
-        stop(paste("Account",aname," not found, use initAcct() to create a new account"))
+        stop("Account ", aname, " not found, use initAcct() to create a new account")
 
     toDate = paste('::', Date, sep="")
     EndEq = as.numeric(tail(Account$summary[toDate,], n=1)[,"End.Eq"])
@@ -23,6 +23,6 @@ getEndEq <- function(Account, Date)
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: getEndEq.R 1641 2014-10-21 02:57:11Z bodanker $
 #
 ###############################################################################

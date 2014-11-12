@@ -34,6 +34,12 @@
 #' have "TxnQty" and "TxnPrice" columns, while the "TxnFees"
 #' column is optional.
 #' 
+#' If \code{TxnFees} is the name of a function, the function 
+#' will be called with \code{TxnFees(TxnQty, TxnPrice, Symbol)}
+#' so a user supplied fee function must at the very least take 
+#' dots to avoid an error. We have chosen not to use named arguments 
+#' to reduce issues from user-supplied fee functions. 
+#' 
 #' @param Portfolio  A portfolio name that points to a portfolio object structured with \code{initPortf()}
 #' @param Symbol An instrument identifier for a symbol included in the portfolio, e.g., "IBM"
 #' @param TxnDate  Transaction date as ISO 8601, e.g., '2008-09-01' or '2010-01-05 09:54:23.12345'
@@ -41,6 +47,7 @@
 #' @param TxnPrice  Price at which the transaction was done
 #' @param \dots Any other passthrough parameters
 #' @param TxnFees Fees associated with the transaction, e.g. commissions., See Details
+#' @param allowRebates whether to allow positive (rebate) TxnFees, default FALSE
 #' @param ConMult Contract/instrument multiplier for the Symbol if it is not defined in an instrument specification
 #' @param verbose If TRUE (default) the function prints the elements of the transaction in a line to the screen, e.g., "2007-01-08 IBM 50 @@ 77.6". Suppress using FALSE.
 #' @param eps value to add to force unique indices
@@ -54,10 +61,14 @@
 #' @author Peter Carl, Brian G. Peterson
 #' @export addTxn
 #' @export addTxns
-addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, ConMult=NULL, verbose=TRUE, eps=1e-06)
+addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0, allowRebates=FALSE, ConMult=NULL, verbose=TRUE, eps=1e-06)
 { 
-
     pname <- Portfolio
+    #If there is no table for the symbol then create a new one
+    if(is.null(.getPortfolio(pname)$symbols[[Symbol]]))
+        addPortfInstr(Portfolio=pname, symbols=Symbol)
+    Portfolio <- .getPortfolio(pname)
+
     PrevPosQty = getPosQty(pname, Symbol, TxnDate)
     
     if(!is.timeBased(TxnDate) ){
@@ -75,8 +86,6 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
         TxnFees=txnFeeQty*abs(TxnQty+PrevPosQty)
     }
     
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
         if(inherits(tmp_instr,"try-error") | !is.instrument(tmp_instr)){
@@ -87,13 +96,6 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
         }
     }
 
-  	#If there is no table for the symbol then create a new one
-  	if (is.null(Portfolio$symbols[[Symbol]])){ 
-  		addPortfInstr(Portfolio=pname, symbols=Symbol)
-  		Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
-  	}
-
-
     # FUNCTION
     # Coerce the transaction fees to a function if a string was supplied
     
@@ -102,10 +104,14 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
         if (!inherits(TF,"try-error")) TxnFees<-TF
     }
     # Compute transaction fees if a function was supplied
-    if (is.function(TxnFees)) txnfees <- TxnFees(TxnQty, TxnPrice) else txnfees<- as.numeric(TxnFees)
-
+    if (is.function(TxnFees)) {
+      txnfees <- TxnFees(TxnQty, TxnPrice, Symbol) 
+    } else {
+      txnfees<- as.numeric(TxnFees)
+    }
+      
     if(is.null(txnfees) | is.na(txnfees)) txnfees = 0
-    if(txnfees>0) warning('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
+    if(txnfees>0 && !isTRUE(allowRebates)) stop('Positive Transaction Fees should only be used in the case of broker/exchange rebates for TxnFees ',TxnFees,'. See Documentation.')
     
     # Calculate the value and average cost of the transaction
     TxnValue = .calcTxnValue(TxnQty, TxnPrice, 0, ConMult) # Gross of Fees
@@ -140,25 +146,26 @@ addTxn <- function(Portfolio, Symbol, TxnDate, TxnQty, TxnPrice, ..., TxnFees=0,
       # print(paste(TxnDate, Symbol, TxnQty, "@",TxnPrice, sep=" "))
       print(paste(format(TxnDate, "%Y-%m-%d %H:%M:%S"), Symbol, TxnQty, "@",TxnPrice, sep=" "))
       #print(Portfolio$symbols[[Symbol]]$txn)
-    
-    #portfolio is already an environment, it's been updated in place
-    #assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
 
 #' Example TxnFee cost function
 #' @param TxnQty total units (such as shares or contracts) transacted.  Positive values indicate a 'buy'; negative values indicate a 'sell'
 #' This is an example intended to demonstrate how a cost function could be used in place of a flat numeric fee.
+#' @param \dots any other passthrough parameters
 #' @export
-pennyPerShare <- function(TxnQty) {
+pennyPerShare <- function(TxnQty, ...) {
     return(abs(TxnQty) * -0.01)
 }
 
 #' @rdname addTxn
 #' @export
-addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL, eps=1e-06)
+addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL, allowRebates=FALSE, eps=1e-06)
 {
-    pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    pname <- Portfolio
+    #If there is no table for the symbol then create a new one
+    if(is.null(.getPortfolio(pname)$symbols[[Symbol]]))
+        addPortfInstr(Portfolio=pname, symbols=Symbol)
+    Portfolio <- .getPortfolio(pname)
 
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
@@ -189,6 +196,11 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     } else {
       NewTxns$Txn.Fees <- 0
     }
+  
+    if(any(NewTxns$Txn.Fees > 0) && !isTRUE(allowRebates)){
+      stop('Positive Transaction Fees should only be used in the case of broker/exchange rebates. See Documentation.')
+    }
+  
     # split transactions that would cross through zero
     Pos <- drop(cumsum(NewTxns$Txn.Qty))
     Pos <- merge(Qty=Pos, PrevQty=lag(Pos))
@@ -234,9 +246,6 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
     Portfolio$symbols[[Symbol]]$txn <- rbind(Portfolio$symbols[[Symbol]]$txn, NewTxns) 
 
     if(verbose) print(NewTxns)
-
-    #portfolio is already an environment, it's been updated in place
-    # assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)    
 }
 
 #' Add cash dividend transactions to a portfolio.
@@ -259,8 +268,11 @@ addTxns<- function(Portfolio, Symbol, TxnData , verbose=FALSE, ..., ConMult=NULL
 #' 
 addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConMult=NULL, verbose=TRUE)
 { # @author Peter Carl
-    pname<-Portfolio
-    Portfolio<-get(paste("portfolio",pname,sep='.'),envir=.blotter)
+    pname <- Portfolio
+    #If there is no table for the symbol then create a new one
+    if(is.null(.getPortfolio(pname)$symbols[[Symbol]]))
+        addPortfInstr(Portfolio=pname, symbols=Symbol)
+    Portfolio <- .getPortfolio(pname)
 
     if(is.null(ConMult) | !hasArg(ConMult)){
         tmp_instr<-try(getInstrument(Symbol), silent=TRUE)
@@ -304,9 +316,6 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
     if(verbose)
         print(paste(TxnDate, Symbol, "Dividend", DivPerShare, "on", PrevPosQty, "shares:", -TxnValue, sep=" "))
         #print(Portfolio$symbols[[Symbol]]$txn)
-
-    #portfolio is already an environment, it's been updated in place
-    #assign(paste("portfolio",pname,sep='.'),Portfolio,envir=.blotter)
 }
 ###############################################################################
 # Blotter: Tools for transaction-oriented trading systems development
@@ -316,6 +325,6 @@ addDiv <- function(Portfolio, Symbol, TxnDate, DivPerShare, ..., TxnFees=0, ConM
 # This library is distributed under the terms of the GNU Public License (GPL)
 # for full details see the file COPYING
 #
-# $Id$
+# $Id: addTxn.R 1644 2014-11-01 20:32:11Z braverock $
 #
 ###############################################################################
